@@ -1,5 +1,5 @@
 var FONT = 'Menlo-Bold';
-var CHARS = Array(95).fill().map((_,i) => String.fromCharCode(i + 32));
+var CHARS = Array(95).fill().map(function(_,i) {return String.fromCharCode(i + 32)});
 
 /**
  * jQuery what...???
