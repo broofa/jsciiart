@@ -1,5 +1,7 @@
-var FONT = 'Menlo-Bold';
-var CHARS = Array(95).fill().map((_,i) => String.fromCharCode(i + 32));
+const FONT = 'Menlo-Bold';
+const CHARS = Array(95)
+  .fill()
+  .map((_, i) => String.fromCharCode(i + 32));
 
 /**
  * jQuery what...???
@@ -13,7 +15,7 @@ function $(sel) {
  * (useful fo interim work)
  */
 function getCanvas(w, h) {
-  var worker = document.createElement('canvas');
+  const worker = document.createElement('canvas');
   worker.width = w;
   worker.height = h;
 
@@ -25,7 +27,7 @@ function getCanvas(w, h) {
  * array, 'pixels'
  */
 function grayValue(pixels, i) {
-  return pixels[i] * 0.30 + pixels[i+1] * 0.59 + pixels[i+2] * 0.11;
+  return pixels[i] * 0.3 + pixels[i + 1] * 0.59 + pixels[i + 2] * 0.11;
 }
 
 /**
@@ -41,24 +43,25 @@ function grayValue(pixels, i) {
  * b:      Subregion w/in which to work
  */
 function getRenderedCharInfo(canvas, b) {
-  var ctx = canvas.getContext('2d');
-  var w = canvas.width, h = canvas.height;
-  var ob = b;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width,
+    h = canvas.height;
+  const ob = b;
 
   // Basic dimensions
-  var info = ob ? {} :
-    {x: w, y: h, w: 0, h: 0};
+  const info = ob ? {} : { x: w, y: h, w: 0, h: 0 };
 
-  b = b || {x: 0, y: 0, w: w, h: h};
+  b = b || { x: 0, y: 0, w: w, h: h };
 
-  var src = ctx.getImageData(b.x, b.y, b.w, b.h).data;
+  const src = ctx.getImageData(b.x, b.y, b.w, b.h).data;
   info.gray = 0;
-  for (var dy = 0, i = 0; dy < b.h; dy++) {
-    for (var dx = 0; dx < b.w; dx++, i += 4) {
-      var x = b.x + dx, y = b.y + dy;
+  for (let dy = 0, i = 0; dy < b.h; dy++) {
+    for (let dx = 0; dx < b.w; dx++, i += 4) {
+      const x = b.x + dx,
+        y = b.y + dy;
 
       // Intensity of this pixel
-      var gray = grayValue(src, i);
+      const gray = grayValue(src, i);
       info.gray += gray;
 
       if (!ob && Math.round(gray) < 255) {
@@ -79,9 +82,12 @@ function getRenderedCharInfo(canvas, b) {
  * Figure out which characters render the lightest/darkest
  */
 function getCharInfo() {
-  var W = 40, H = 40, W2 = W >> 1, H2 = H >> 1;
-  var canvas = getCanvas(W, H);
-  var ctx = canvas.getContext('2d');
+  const W = 40,
+    H = 40,
+    W2 = W >> 1,
+    H2 = H >> 1;
+  const canvas = getCanvas(W, H);
+  const ctx = canvas.getContext('2d');
 
   ctx.font = 'bold 16pt "' + FONT + '"';
 
@@ -90,16 +96,18 @@ function getCharInfo() {
   ctx.fillStyle = 'white';
   ctx.fillRect(0, 0, W, H);
   ctx.fillStyle = 'black';
-  for (var ci = 0; ci < CHARS.length; ci++) {
+  for (let ci = 0; ci < CHARS.length; ci++) {
     ctx.fillText(CHARS[ci], W2, H2);
   }
-  var bounds = getRenderedCharInfo(canvas);
+  const bounds = getRenderedCharInfo(canvas);
 
   // Now render each character individually withon those bounds and
   // collect the various traits we're interested in
-  var infos = [], grayMin = 1e12, grayMax = 0;
-  for (var ci = 0; ci < CHARS.length; ci++) {
-    var char = CHARS[ci];
+  const infos = [];
+  let grayMin = 1e12;
+  let grayMax = 0;
+  for (let ci = 0; ci < CHARS.length; ci++) {
+    const char = CHARS[ci];
 
     // Get info about the rendered character
     ctx.font = '16pt "' + FONT + '"';
@@ -107,7 +115,7 @@ function getCharInfo() {
     ctx.fillRect(0, 0, W, H);
     ctx.fillStyle = 'black';
     ctx.fillText(char, W2, H2);
-    var info = getRenderedCharInfo(canvas, bounds);
+    const info = getRenderedCharInfo(canvas, bounds);
 
     // adjust origin and annotate with char info
     info.char = char;
@@ -119,71 +127,73 @@ function getCharInfo() {
   }
 
   // Normalize gray levels across
-  infos.forEach(function(g) {
+  infos.forEach(function (g) {
     g.gray = (g.gray - grayMin) / (grayMax - grayMin);
     g.gray = Math.round(g.gray * 1000) / 1000;
   });
 
   // Sort by gray value
-  infos.sort(function(a, b) {
+  infos.sort(function (a, b) {
     return a.gray - b.gray;
   });
 
   return infos;
 }
 
-onload = function() {
-  // Grab elements, create settings, etc.
-  var canvas = $('#canvas'),
-    video = $('#video'),
-    videoObj = { video: true },
-    errBack = function(error) {
-      console.log('Video capture error: ', error.code);
-    };
+onload = async function () {
+  // Attach video listener
+  if (!navigator?.mediaDevices?.getUserMedia) {
+    throw Error('getUserMedia not supported');
+  }
 
-  var vCanvas = getCanvas(video.width, video.height);
-  var ctx = vCanvas.getContext('2d');
-  var pre = $('#ascii');
-  var infos = getCharInfo();
+  // Grab elements, create settings, etc.
+  const canvas = $('#canvas'),
+    video = $('#video');
+
+  const vCanvas = getCanvas(video.width, video.height);
+  const ctx = vCanvas.getContext('2d');
+  const pre = $('#ascii');
+  const infos = getCharInfo();
 
   function videoToAscii() {
-    var iw = video.width, ih = video.height;
+    let iw = video.width,
+      ih = video.height;
 
-    var scale = iw > ih ? (video.height / iw) : (video.width / ih);
+    const scale = iw > ih ? video.height / iw : video.width / ih;
     iw *= scale;
-    ih *= scale * .58;
+    ih *= scale * 0.58;
 
     ctx.drawImage(video, 0, 0, iw, ih);
-    var id = ctx.getImageData(0, 0, iw, ih);
-    var src = id.data;
+    const id = ctx.getImageData(0, 0, iw, ih);
+    const src = id.data;
 
     // Figure out gray levels for doing auto-contrast.  We start by getting a
     // count of pixels at each of the 256 levels ...
-    var counts = Array(256).fill(0);
-    var grayMin = 256, grayMax = 0;
-    for (var y = 0, i = 0; y < id.height; y++) {
-      for (var x = 0; x < id.width; x++, i += 4) {
+    const counts = Array(256).fill(0);
+    let grayMin = 256;
+      let grayMax = 0;
+    for (let y = 0, i = 0; y < id.height; y++) {
+      for (let x = 0; x < id.width; x++, i += 4) {
         counts[Math.floor(grayValue(src, i))] += 1;
       }
     }
 
     // Then pick our max/min gray values at thresholds that push a few pixels
     // above/below the light/dark thresholds
-    var thresh = id.width/2;
-    var grayMin, grayMax;
-    for (var i = 0, n = 0; n < thresh; i++, n += counts[i], grayMin = i);
-    for (var i = 255, n = 0; n < thresh; i--, n += counts[i], grayMax = i);
-    var grayDiff = grayMax - grayMin;
+    const thresh = id.width / 2;
+    for (let i = 0, n = 0; n < thresh; i++, n += counts[i], grayMin = i);
+    for (let i = 255, n = 0; n < thresh; i--, n += counts[i], grayMax = i);
+    const grayDiff = grayMax - grayMin;
 
     // Avoid divide-by-zero if the frame is all one color for whatever reason
     // (may happy on first frame of stream?)
     if (grayDiff > 0) {
       // Build some ascii art!
-      var asciiArtYay = [];
-      for (var y = 0, i = 0; y < id.height; y++) {
-        for (var x = 0; x < id.width; x++, i += 4) {
+      const asciiArtYay = [];
+      for (let y = 0, i = 0; y < id.height; y++) {
+        for (let x = 0; x < id.width; x++, i += 4) {
           // Map gray value to index into our character map
-          var val = infos.length * (grayValue(src, i) - grayMin) / grayDiff;
+          let val = (infos.length * (grayValue(src, i) - grayMin)) / grayDiff;
           val = Math.max(0, Math.min(infos.length - 1, val));
 
           asciiArtYay.push(infos[Math.floor(val)].char);
@@ -197,21 +207,12 @@ onload = function() {
     requestAnimationFrame(videoToAscii);
   }
 
-  navigator.getMedia = navigator.getUserMedia ||
-    navigator.webkitGetUserMedia ||
-    navigator.mozGetUserMedia ||
-    navigator.msGetUserMedia;
+  // Standard
+  const stream = await navigator.mediaDevices?.getUserMedia({ video: true });
 
+  video.srcObject = stream;
+  video.play();
 
-  // Attach video listener
-  if (navigator.getMedia) { // Standard
-    navigator.getMedia(videoObj, function(stream) {
-      video.src = stream;
-      video.src = window.URL.createObjectURL(stream);
-      video.play();
-
-      // Make it so!
-      videoToAscii()
-    }, errBack);
-  }
-}
+  // Make it so!
+  videoToAscii();
+};
