@@ -1,0 +1,14 @@
+export default [
+  {
+    languageOptions: {
+      parserOptions: {
+        ecmaVersion: 2021,
+      },
+    },
+    rules: {
+      "no-var": 2,
+      "prefer-const": 2,
+      quotes: ["error", "single"],
+    },
+  },
+];

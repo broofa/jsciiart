@@ -1,4 +1,4 @@
-const FONT = 'Menlo-Bold';
+const FONT = "Menlo-Bold";
 const CHARS = Array(95)
   .fill()
   .map((_, i) => String.fromCharCode(i + 32));
@@ -15,7 +15,7 @@ function $(sel) {
  * (useful fo interim work)
  */
 function getCanvas(w, h) {
-  const worker = document.createElement('canvas');
+  const worker = document.createElement("canvas");
   worker.width = w;
   worker.height = h;
 
@@ -43,7 +43,7 @@ function grayValue(pixels, i) {
  * b:      Subregion w/in which to work
  */
 function getRenderedCharInfo(canvas, b) {
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext("2d");
   const w = canvas.width,
     h = canvas.height;
   const ob = b;
@@ -87,15 +87,15 @@ function getCharInfo() {
     W2 = W >> 1,
     H2 = H >> 1;
   const canvas = getCanvas(W, H);
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext("2d");
 
   ctx.font = 'bold 16pt "' + FONT + '"';
 
   // Render all characters together and then get the bounds within which the
   // actual rendering occured
-  ctx.fillStyle = 'white';
+  ctx.fillStyle = "white";
   ctx.fillRect(0, 0, W, H);
-  ctx.fillStyle = 'black';
+  ctx.fillStyle = "black";
   for (let ci = 0; ci < CHARS.length; ci++) {
     ctx.fillText(CHARS[ci], W2, H2);
   }
@@ -111,9 +111,9 @@ function getCharInfo() {
 
     // Get info about the rendered character
     ctx.font = '16pt "' + FONT + '"';
-    ctx.fillStyle = 'white';
+    ctx.fillStyle = "white";
     ctx.fillRect(0, 0, W, H);
-    ctx.fillStyle = 'black';
+    ctx.fillStyle = "black";
     ctx.fillText(char, W2, H2);
     const info = getRenderedCharInfo(canvas, bounds);
 
@@ -143,16 +143,16 @@ function getCharInfo() {
 onload = async function () {
   // Attach video listener
   if (!navigator?.mediaDevices?.getUserMedia) {
-    throw Error('getUserMedia not supported');
+    throw Error("getUserMedia not supported");
   }
 
   // Grab elements, create settings, etc.
-  const canvas = $('#canvas'),
-    video = $('#video');
+  const canvas = $("#canvas"),
+    video = $("#video");
 
   const vCanvas = getCanvas(video.width, video.height);
-  const ctx = vCanvas.getContext('2d');
-  const pre = $('#ascii');
+  const ctx = vCanvas.getContext("2d");
+  const pre = $("#ascii");
   const infos = getCharInfo();
 
   function videoToAscii() {
@@ -171,7 +171,7 @@ onload = async function () {
     // count of pixels at each of the 256 levels ...
     const counts = Array(256).fill(0);
     let grayMin = 256;
-      let grayMax = 0;
+    let grayMax = 0;
     for (let y = 0, i = 0; y < id.height; y++) {
       for (let x = 0; x < id.width; x++, i += 4) {
         counts[Math.floor(grayValue(src, i))] += 1;
@@ -198,10 +198,10 @@ onload = async function () {
 
           asciiArtYay.push(infos[Math.floor(val)].char);
         }
-        asciiArtYay.push('\n');
+        asciiArtYay.push("\n");
       }
 
-      pre.innerText = asciiArtYay.join('');
+      pre.innerText = asciiArtYay.join("");
     }
 
     requestAnimationFrame(videoToAscii);
