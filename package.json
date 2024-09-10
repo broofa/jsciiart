@@ -1,6 +1,9 @@
 {
   "type": "module",
   "dependencies": {},
+  "scripts": {
+    "start": "npx http-server -o ."
+  },
   "devDependencies": {
     "eslint": "^9.10.0",
     "eslint-config-prettier": "^9.1.0",
